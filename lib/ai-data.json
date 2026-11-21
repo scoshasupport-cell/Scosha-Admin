@@ -1,0 +1,109 @@
+{
+  "skinProfiles": [
+    {
+      "id": "combo-hydration",
+      "skinType": "Combination",
+      "concerns": ["Hydration", "Uneven Texture", "Dullness"],
+      "analysisScore": 86,
+      "metrics": {
+        "hydration": 62,
+        "oilBalance": 74,
+        "sensitivity": 28,
+        "texture": 68
+      },
+      "summary": "Your skin shows a healthy skin barrier with moderate dehydration in the cheek zone and mild sebum production in the T-zone.",
+      "routineSteps": [
+        {
+          "step": "Cleanse",
+          "title": "Gentle Micellar Wash",
+          "productHandle": "bioderma-sensibio-h2o-500ml",
+          "reason": "Soothes skin and preserves the lipid barrier without stripping moisture."
+        },
+        {
+          "step": "Treat",
+          "title": "Hyaluronic Acid Plumping Serum",
+          "productHandle": "loreal-paris-hyaluron-expert-serum",
+          "reason": "Restores deep moisture and smooths micro-texture."
+        },
+        {
+          "step": "Moisturize",
+          "title": "Barrier Support Cream",
+          "productHandle": "the-ordinary-soothing-barrier-support-serum",
+          "reason": "Strengthens compromised skin barrier and provides lightweight daily hydration."
+        },
+        {
+          "step": "Protect",
+          "title": "Invisible Fluid SPF 50+",
+          "productHandle": "neutrogena-ultra-sheer-invisible-fluid",
+          "reason": "Provides weightless broad-spectrum UVA/UVB defense without shine."
+        }
+      ]
+    },
+    {
+      "id": "dry-sensitive",
+      "skinType": "Dry & Sensitive",
+      "concerns": ["Dryness", "Fine Lines", "Redness"],
+      "analysisScore": 82,
+      "metrics": {
+        "hydration": 45,
+        "oilBalance": 38,
+        "sensitivity": 78,
+        "texture": 60
+      },
+      "summary": "Your skin indicates lower moisture retention and elevated reactivity. Gentle, fragrance-free barrier lipids are recommended.",
+      "routineSteps": [
+        {
+          "step": "Cleanse",
+          "title": "Calming Micellar Cleanser",
+          "productHandle": "bioderma-sensibio-h2o-500ml",
+          "reason": "Non-rinse cleansing that respects sensitive and reactive skin."
+        },
+        {
+          "step": "Treat",
+          "title": "Soothing Barrier Support",
+          "productHandle": "the-ordinary-soothing-barrier-support-serum",
+          "reason": "Multi-active solution designed to reduce visible redness and repair skin integrity."
+        },
+        {
+          "step": "Eye Care",
+          "title": "Revitalift Laser Eye Cream",
+          "productHandle": "loreal-revitalift-laser-eye-cream",
+          "reason": "Cooling precision applicator diminishes dehydration lines around the eyes."
+        }
+      ]
+    },
+    {
+      "id": "oily-acne",
+      "skinType": "Oily & Blemish-Prone",
+      "concerns": ["Acne & Blemishes", "Enlarged Pores", "Oiliness"],
+      "analysisScore": 88,
+      "metrics": {
+        "hydration": 58,
+        "oilBalance": 89,
+        "sensitivity": 42,
+        "texture": 55
+      },
+      "summary": "Active sebum production in the central facial zone with localized congestion. Salicylic acid and soothing zinc will balance clarity.",
+      "routineSteps": [
+        {
+          "step": "Cleanse",
+          "title": "Effaclar Purifying Foaming Gel",
+          "productHandle": "la-roche-posay-effaclar-gel-400ml",
+          "reason": "Eliminates excess sebum and impurities while maintaining skin pH."
+        },
+        {
+          "step": "Treat",
+          "title": "Glycolic Bright Serum",
+          "productHandle": "loreal-paris-glycolic-bright-serum",
+          "reason": "Gently exfoliates post-blemish dark spots and refines surface radiance."
+        },
+        {
+          "step": "Protect",
+          "title": "Ultra-Sheer Matte Fluid SPF",
+          "productHandle": "neutrogena-ultra-sheer-invisible-fluid",
+          "reason": "Zero-white cast, non-comedogenic sun defense suited for oily skin."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,785 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth & RBAC ─────────────────────────────────────────────────────────────
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  module      String
+  action      String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  rolePermissions RolePermission[]
+
+  @@unique([module, action])
+  @@map("permissions")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       User[]
+  admins      Admin[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id           Int @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  email               String?   @unique
+  phone               String?
+  /// Google account id when the customer continues with Google
+  googleId            String?   @unique
+  passwordHash        String
+  isEmailVerified     Boolean   @default(false)
+  roleId              Int?
+  refreshTokenHash    String?
+  /// Bumped on logout, password change, and password reset. Access tokens carry this value.
+  tokenVersion        Int       @default(0)
+  otpCode             String?
+  otpExpiry           DateTime?
+  resetPasswordToken  String?
+  resetPasswordExpiry DateTime?
+  status              String    @default("active") // active | banned
+  lastLogin           DateTime?
+  avatar              String?
+  /// Preferred shopping gender for recommendations (women | men | unisex)
+  gender              String?
+  /// Preferred clothing size (e.g. S, M, L, 42)
+  preferredSize       String?
+  /// VIP unlocked after a single order subtotal ≥ $300
+  isVip                     Boolean   @default(false)
+  vipUnlockedAt             DateTime?
+  /// Auto-applied 10% off on the next order (0 or 10)
+  vipPendingDiscountPercent Int       @default(0)
+  /// Remaining free standard deliveries (granted in packs of 5)
+  freeDeliveryCredits       Int       @default(0)
+  /// Storefront congratulations popup acknowledged
+  vipCongratsSeen           Boolean   @default(false)
+  /// May browse VIP early-access collections/products
+  vipEarlyAccess            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  role         Role?         @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  addresses    Address[]
+  cart         Cart?
+  wishlist     Wishlist?
+  orders       Order[]
+  reviews      Review[]
+  activityLogs ActivityLog[]
+
+  @@index([phone])
+  @@index([status])
+  @@index([roleId])
+  @@map("users")
+}
+
+model Admin {
+  id               Int       @id @default(autoincrement())
+  name             String
+  email            String    @unique
+  passwordHash     String
+  roleId           Int
+  refreshTokenHash String?
+  /// Bumped on logout and password change. Access tokens carry this value.
+  tokenVersion     Int       @default(0)
+  status           String    @default("active") // active | banned
+  lastLogin        DateTime?
+  avatar           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  role           Role            @relation(fields: [roleId], references: [id])
+  orderTimelines OrderTimeline[]
+  blogs          Blog[]
+  auditLogs      AuditLog[]
+
+  @@index([status])
+  @@index([roleId])
+  @@map("admins")
+}
+
+// ─── Catalog ─────────────────────────────────────────────────────────────────
+
+model Brand {
+  id             Int      @id @default(autoincrement())
+  name           String
+  slug           String   @unique
+  logo           String?
+  banner         String?
+  description    String?  @db.Text
+  seoTitle       String?
+  seoDescription String?  @db.Text
+  seoKeywords    Json?
+  status         String   @default("active") // active | inactive
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  products   Product[]
+  sizeCharts SizeChart[]
+
+  @@index([status, sortOrder])
+  @@map("brands")
+}
+
+model SizeChart {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  brandId             Int?
+  gender              String   // women | men | kids
+  category            String   // tops | bottoms | dresses | etc.
+  unit                String   @default("cm")
+  measurementFields   Json     // Array of { id, label, instruction }
+  sizes               Json     // Array of size rows with regional sizes & cm values/ranges
+  recommendationRules Json?    // Optional fit tips / tolerance overrides
+  isDefault           Boolean  @default(false)
+  status              String   @default("active") // active | inactive
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  brand Brand? @relation(fields: [brandId], references: [id], onDelete: SetNull)
+
+  @@index([brandId])
+  @@index([gender, category])
+  @@index([status])
+  @@map("size_charts")
+}
+
+model Category {
+  id             Int      @id @default(autoincrement())
+  name           String
+  slug           String   @unique
+  parentId       Int?
+  image          String?
+  description    String?  @db.Text
+  seoTitle       String?
+  seoDescription String?  @db.Text
+  seoKeywords    Json?
+  status         String   @default("active") // active | inactive
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parent       Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Category[] @relation("CategoryTree")
+  products     Product[]  @relation("ProductCategory")
+  subProducts  Product[]  @relation("ProductSubCategory")
+
+  @@index([parentId, sortOrder])
+  @@index([status])
+  @@map("categories")
+}
+
+model Collection {
+  id             Int       @id @default(autoincrement())
+  title          String
+  slug           String    @unique
+  subtitle       String?
+  image          String?
+  featured       Boolean   @default(false)
+  seasonal       Boolean   @default(false)
+  status         String    @default("active") // active | inactive (soft off)
+  /// draft = admin only | vip_early_access = VIP members | public = everyone
+  accessLevel    String    @default("public")
+  /// When set and reached, accessLevel auto-promotes to public
+  publicAt       DateTime?
+  sortOrder      Int       @default(0)
+  seoTitle       String?
+  seoDescription String?   @db.Text
+  seoKeywords    Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  products ProductCollection[]
+
+  @@index([status, sortOrder])
+  @@index([status, accessLevel])
+  @@index([featured])
+  @@map("collections")
+}
+
+model Product {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.VarChar(500)
+  slug              String   @unique @db.VarChar(255)
+  description       String?  @db.Text
+  details           Json?
+  specs             Json?
+  brandId           Int
+  categoryId        Int
+  subCategoryId     Int?
+  basePrice         Decimal  @db.Decimal(10, 2)
+  comparePrice      Decimal? @db.Decimal(10, 2)
+  costPrice         Decimal? @db.Decimal(10, 2)
+  images            Json?
+  tags              Json?
+  status            String   @default("draft") // draft | active | archived
+  featured          Boolean  @default(false)
+  trending          Boolean  @default(false)
+  newArrival        Boolean  @default(false)
+  bestSeller        Boolean  @default(false)
+  /// Active product visible only to VIP customers (early access before public launch)
+  vipEarlyAccess    Boolean  @default(false)
+  relatedProductIds Json?
+  seoTitle          String?  @db.VarChar(255)
+  seoDescription    String?  @db.Text
+  seoKeywords       Json?
+  weight            Decimal  @default(0) @db.Decimal(10, 2)
+  badge             String?
+  ratingAvg         Decimal  @default(0) @db.Decimal(3, 2)
+  reviewCount       Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  brand         Brand               @relation(fields: [brandId], references: [id])
+  category      Category            @relation("ProductCategory", fields: [categoryId], references: [id])
+  subCategory   Category?           @relation("ProductSubCategory", fields: [subCategoryId], references: [id], onDelete: SetNull)
+  collections   ProductCollection[]
+  variants      ProductVariant[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems    OrderItem[]
+  reviews       Review[]
+
+  @@index([brandId, status])
+  @@index([categoryId, status])
+  @@index([subCategoryId])
+  @@index([status, featured])
+  @@index([status, trending])
+  @@index([status, newArrival])
+  @@index([status, bestSeller])
+  @@index([status, basePrice])
+  @@index([status, ratingAvg])
+  @@index([createdAt])
+  @@map("products")
+}
+
+model ProductCollection {
+  id           Int @id @default(autoincrement())
+  productId    Int
+  collectionId Int
+
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, collectionId])
+  @@index([collectionId])
+  @@map("product_collections")
+}
+
+model ProductVariant {
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  colorName    String
+  colorHex     String?
+  size         String
+  sku          String   @unique
+  price        Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  costPrice    Decimal? @db.Decimal(10, 2)
+  stock        Int      @default(0)
+  weight       Decimal? @db.Decimal(10, 2)
+  images       Json?
+  status       String   @default("active") // active | inactive
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  stockMovements  StockMovement[]
+
+  @@index([productId, status])
+  @@index([productId, colorName, size])
+  @@index([status, stock])
+  @@map("product_variants")
+}
+
+model StockMovement {
+  id          Int      @id @default(autoincrement())
+  variantId   Int
+  quantity    Int // positive = in, negative = out
+  reason      String   @db.VarChar(64) // sale | return | adjust | restock | set
+  note        String?  @db.VarChar(500)
+  orderId     Int?
+  adminId     Int?
+  stockBefore Int      @default(0)
+  stockAfter  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId, createdAt])
+  @@index([reason, createdAt])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
+
+// ─── Customer commerce ───────────────────────────────────────────────────────
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  phone     String
+  email     String?
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  zip       String
+  country   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault])
+  @@map("addresses")
+}
+
+model Cart {
+  id             Int      @id @default(autoincrement())
+  userId         Int?     @unique
+  guestSessionId String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  variantId Int
+  productId Int
+  quantity  Int      @default(1)
+  color     String?
+  size      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         Int      @id @default(autoincrement())
+  wishlistId Int
+  productId  Int
+  createdAt  DateTime @default(now())
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+model Coupon {
+  id                     Int       @id @default(autoincrement())
+  code                   String    @unique
+  type                   String // percentage | fixed
+  value                  Decimal   @db.Decimal(10, 2)
+  minOrder               Decimal?  @db.Decimal(10, 2)
+  maxDiscount            Decimal?  @db.Decimal(10, 2)
+  usageLimit             Int?
+  usedCount              Int       @default(0)
+  perUserLimit           Int?
+  startsAt               DateTime?
+  expiresAt              DateTime?
+  status                 String    @default("active") // active | inactive
+  applicableProductIds   Json?
+  applicableCategoryIds  Json?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([status, expiresAt])
+  @@map("coupons")
+}
+
+// ─── Orders ──────────────────────────────────────────────────────────────────
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  orderNumber     String   @unique
+  userId          Int
+  deliveryMethod  String   @default("standard") // standard | express
+  shippingCharge  Decimal  @default(0) @db.Decimal(10, 2)
+  tax             Decimal  @default(0) @db.Decimal(10, 2)
+  couponCode      String?
+  couponDiscount  Decimal  @default(0) @db.Decimal(10, 2)
+  subtotal        Decimal  @db.Decimal(10, 2)
+  total           Decimal  @db.Decimal(10, 2)
+  status          String   @default("pending") // pending | confirmed | processing | shipped | delivered | cancelled | refunded
+  paymentMethod   String   @default("COD")
+  notes           String?  @db.Text
+  trackingNumber  String?
+  invoiceUrl      String?
+
+  // Shipping address snapshot
+  shipName    String
+  shipPhone   String
+  shipEmail   String?
+  shipLine1   String
+  shipLine2   String?
+  shipCity    String
+  shipState   String
+  shipZip     String
+  shipCountry String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id])
+  items    OrderItem[]
+  timeline OrderTimeline[]
+  reviews  Review[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([couponCode])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  productId    Int?
+  variantId    Int?
+  name         String
+  sku          String?
+  color        String?
+  size         String?
+  unitPrice    Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  unitCost     Decimal? @db.Decimal(10, 2)
+  quantity     Int
+  imageUrl     String?
+  weight       Decimal? @db.Decimal(10, 2)
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+model OrderTimeline {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  status    String
+  note      String?
+  at        DateTime @default(now())
+  byAdminId Int?
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  byAdmin Admin? @relation(fields: [byAdminId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, at])
+  @@index([byAdminId])
+  @@map("order_timelines")
+}
+
+// ─── Reviews & media ─────────────────────────────────────────────────────────
+
+model Review {
+  id              Int       @id @default(autoincrement())
+  productId       Int
+  userId          Int
+  orderId         Int?
+  rating          Int
+  title           String?
+  text            String?   @db.Text
+  images          Json?
+  status          String    @default("pending") // pending | approved | rejected
+  adminReply      String?   @db.Text
+  adminReplyAt    DateTime?
+  verifiedPurchase Boolean  @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([productId, status])
+  @@index([userId])
+  @@index([productId, userId])
+  @@index([orderId])
+  @@map("reviews")
+}
+
+model Media {
+  id               Int      @id @default(autoincrement())
+  url              String
+  publicId         String?
+  folder           String?
+  resourceType     String?
+  width            Int?
+  height           Int?
+  format           String?
+  size             Int?
+  uploadedBy       Int?
+  uploadedByModel  String? // User | Admin
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([folder])
+  @@index([uploadedBy, uploadedByModel])
+  @@map("media")
+}
+
+// ─── CMS & marketing ─────────────────────────────────────────────────────────
+
+model Banner {
+  id        Int       @id @default(autoincrement())
+  title     String?
+  image     String
+  link      String?
+  position  String?
+  sortOrder Int       @default(0)
+  status    String    @default("active") // active | inactive
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([status, sortOrder])
+  @@index([position])
+  @@map("banners")
+}
+
+model HomepageSection {
+  id        Int      @id @default(autoincrement())
+  type      String   @unique
+  title     String?
+  config    Json?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("homepage_sections")
+}
+
+model Page {
+  id             Int      @id @default(autoincrement())
+  title          String
+  slug           String   @unique
+  content        String?  @db.LongText
+  seoTitle       String?
+  seoDescription String?  @db.Text
+  seoKeywords    Json?
+  status         String   @default("draft") // draft | published | archived
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@map("pages")
+}
+
+model Blog {
+  id             Int       @id @default(autoincrement())
+  title          String
+  slug           String    @unique
+  excerpt        String?   @db.Text
+  content        String?   @db.LongText
+  coverImage     String?
+  authorId       Int?
+  tags           Json?
+  status         String    @default("draft") // draft | published | archived
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?   @db.Text
+  seoKeywords    Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  author Admin? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt])
+  @@index([authorId])
+  @@map("blogs")
+}
+
+model FAQ {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String   @db.Text
+  category  String?
+  sortOrder Int      @default(0)
+  status    String   @default("active") // active | inactive
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, sortOrder])
+  @@index([category])
+  @@map("faqs")
+}
+
+model Newsletter {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  status       String   @default("subscribed") // subscribed | unsubscribed
+  subscribedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@map("newsletters")
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+  status    String   @default("new") // new | read | replied | archived
+  reply     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@map("contact_messages")
+}
+
+model Notification {
+  id            Int      @id @default(autoincrement())
+  recipientType String // user | admin
+  recipientId   Int
+  title         String
+  message       String   @db.Text
+  type          String?
+  data          Json?
+  isRead        Boolean  @default(false)
+  link          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([recipientType, recipientId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ─── Settings & logs ─────────────────────────────────────────────────────────
+
+model Setting {
+  id                Int      @id @default(autoincrement())
+  storeName         String   @default("SCOSHA")
+  logo              String?
+  favicon           String?
+  email             String?
+  phone             String?
+  address           String?  @db.Text
+  currency          String   @default("USD")
+  timezone          String   @default("America/New_York")
+  language          String   @default("en")
+  seo               Json?
+  socialLinks       Json?
+  shipping          Json?
+  taxes             Json?
+  paymentMethods    Json?
+  adminEmail        String?
+  lowStockThreshold Int      @default(5)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  adminId   Int?
+  action    String
+  entity    String
+  entityId  Int?
+  before    Json?
+  after     Json?
+  ip        String?
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId, createdAt])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}

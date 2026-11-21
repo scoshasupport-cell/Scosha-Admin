@@ -1,0 +1,65 @@
+{
+  "name": "scosha",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:admin": "npm run dev --prefix admin",
+    "dev:all": "npx --yes concurrently -k -n admin,store,api -c magenta,cyan,green \"npm run dev:admin\" \"npm run dev\" \"npm run dev:backend\"",
+    "build": "next build",
+    "build:admin": "npm install --prefix admin && npm run build --prefix admin && node scripts/copy-admin-to-public.mjs",
+    "start": "next start",
+    "lint": "eslint .",
+    "seed": "npm run seed --prefix backend",
+    "migrate": "npm run migrate --prefix backend",
+    "import:scosha": "npm run import:scosha --prefix backend",
+    "migrate:images": "npm run migrate:images --prefix backend",
+    "rewrite:sco-codes": "npm run rewrite:sco-codes --prefix backend",
+    "sync:demo-catalog": "node scripts/sync-demo-catalog.mjs"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.5.0",
+    "@tanstack/react-query": "^5.104.0",
+    "@vercel/analytics": "1.6.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.43.0",
+    "lucide-react": "^1.16.0",
+    "next": "16.3.8",
+    "react": "^19",
+    "react-dom": "^19",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.3.1",
+    "tw-animate-css": "^1.4.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.1",
+    "shadcn": "^4.8.0",
+    "postcss": "^8.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5.7.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "hono": "4.13.13",
+      "proxy-addr@<2.0.8": "2.0.8",
+      "nanoid@<3.3.18": "3.3.18",
+      "source-map-js@<1.2.2": "1.2.2",
+      "browserslist@<=4.28.6": "4.28.7",
+      "baseline-browser-mapping@<2.11.0": "2.11.0"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akbar-Jahangir/scosha.git"
+  },
+  "license": "ISC",
+  "description": "Scosha storefront + standalone Scosha commerce API/admin (separate deploy & DB from Amaz)"
+}

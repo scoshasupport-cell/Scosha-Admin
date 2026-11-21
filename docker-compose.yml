@@ -1,0 +1,43 @@
+version: "3.9"
+
+# Scosha stack only — own MySQL volume/ports. Do not share with Amaz.
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: scosha-mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ScoshaRoot123!
+      MYSQL_DATABASE: scosha
+      MYSQL_USER: scosha
+      MYSQL_PASSWORD: scosha123
+    volumes:
+      - scosha_mysql_data:/var/lib/mysql
+    command: ["--default-authentication-plugin=mysql_native_password", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pScoshaRoot123!"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: scosha-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: mysql://scosha:scosha123@mysql:3306/scosha
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  scosha_mysql_data:

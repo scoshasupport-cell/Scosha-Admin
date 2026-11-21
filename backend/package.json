@@ -1,0 +1,69 @@
+{
+  "name": "scosha-backend",
+  "version": "1.0.0",
+  "description": "SCOSHA E-commerce Backend API (standalone — not shared with Amaz)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "node --test src/**/*.test.js",
+    "test:integration": "node --test --test-concurrency=1 test/*.integration.test.js",
+    "bench": "node test/bench.js",
+    "load": "node test/load.js",
+    "load:sweep": "node test/load.js sweep",
+    "load:mix": "node test/load.js mix",
+    "load:scale": "node test/catalog-scale.js",
+    "seed": "node src/scripts/seed.js",
+    "migrate": "node src/scripts/migrate-catalog.js",
+    "import:scosha": "node src/scripts/import-scosha.js",
+    "import:pupasita": "node src/scripts/import-pupasita-enriched.js",
+    "migrate:images": "node src/scripts/migrate-images-to-scosha-cloudinary.js",
+    "rewrite:sco-codes": "node src/scripts/rewrite-product-codes-sco.js",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:migrate:status": "prisma migrate status",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:test": "node src/scripts/migrate-test-database.js",
+    "db:migrate:diff": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "2.11.0",
+    "compression": "^1.7.5",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "10.0.16",
+    "pdfkit": "^0.16.0",
+    "qrcode": "^1.5.4",
+    "slugify": "^1.6.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.0.3",
+    "winston": "^3.17.0",
+    "xss-clean": "^0.1.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "nodemon": "^3.1.9",
+    "prisma": "^5.22.0"
+  },
+  "overrides": {
+    "uuid": "$uuid"
+  }
+}

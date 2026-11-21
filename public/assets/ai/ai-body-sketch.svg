@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <radialGradient id="bodyRadarGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.12" />
+      <stop offset="60%" stop-color="#000000" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="bodyStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#111111" />
+      <stop offset="50%" stop-color="#404040" />
+      <stop offset="100%" stop-color="#171717" />
+    </linearGradient>
+  </defs>
+
+  <!-- Concentric Scan Radar Background -->
+  <circle cx="100" cy="100" r="94" fill="url(#bodyRadarGlow)" />
+  <circle cx="100" cy="100" r="90" stroke="#171717" stroke-width="1" stroke-dasharray="3 4" opacity="0.3" />
+  <circle cx="100" cy="100" r="70" stroke="#171717" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.4" />
+  <circle cx="100" cy="100" r="48" stroke="#171717" stroke-width="1.2" opacity="0.5" />
+
+  <!-- Vertical & Horizontal Grid Axes -->
+  <line x1="20" y1="100" x2="180" y2="100" stroke="#000000" stroke-width="0.8" stroke-dasharray="2 4" opacity="0.25" />
+  <line x1="100" y1="15" x2="100" y2="185" stroke="#000000" stroke-width="0.8" stroke-dasharray="2 4" opacity="0.25" />
+
+  <!-- Human Body Silhouette & Fashion Mannequin Sketch -->
+  <!-- Head & Neck -->
+  <ellipse cx="100" cy="34" rx="10" ry="13" stroke="url(#bodyStroke)" stroke-width="2" fill="#ffffff" />
+  <path d="M96 47 L96 54 M104 47 L104 54" stroke="url(#bodyStroke)" stroke-width="1.8" stroke-linecap="round" />
+
+  <!-- Torso, Shoulders & Chest -->
+  <path d="M78 58 Q100 52 122 58 L126 84 Q122 108 114 116 L118 165 L106 165 L102 122 L98 122 L94 165 L82 165 L86 116 Q78 108 74 84 Z" 
+        stroke="url(#bodyStroke)" stroke-width="2.2" stroke-linejoin="round" fill="#ffffff" fill-opacity="0.9" />
+
+  <!-- Arms / Silhouette lines -->
+  <path d="M76 60 Q66 85 64 110" stroke="url(#bodyStroke)" stroke-width="1.8" stroke-linecap="round" />
+  <path d="M124 60 Q134 85 136 110" stroke="url(#bodyStroke)" stroke-width="1.8" stroke-linecap="round" />
+
+  <!-- Sizing Calipers & Measurement Laser Guidelines -->
+  <!-- 1. Chest Caliper -->
+  <line x1="68" y1="74" x2="132" y2="74" stroke="#000000" stroke-width="1.2" stroke-dasharray="2 2" />
+  <circle cx="68" cy="74" r="2" fill="#000000" />
+  <circle cx="132" cy="74" r="2" fill="#000000" />
+
+  <!-- 2. Waist Caliper -->
+  <line x1="78" y1="96" x2="122" y2="96" stroke="#000000" stroke-width="1.2" stroke-dasharray="2 2" />
+  <circle cx="78" cy="96" r="2.2" fill="#000000" />
+  <circle cx="122" cy="96" r="2.2" fill="#000000" />
+
+  <!-- 3. Hips Caliper -->
+  <line x1="72" y1="116" x2="128" y2="116" stroke="#000000" stroke-width="1.2" stroke-dasharray="2 2" />
+  <circle cx="72" cy="116" r="2" fill="#000000" />
+  <circle cx="128" cy="116" r="2" fill="#000000" />
+
+  <!-- 4. Inseam Caliper -->
+  <line x1="100" y1="124" x2="100" y2="164" stroke="#000000" stroke-width="1.2" />
+
+  <!-- Target Corner Reticles -->
+  <path d="M28 42 L28 26 L44 26" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M172 42 L172 26 L156 26" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M28 158 L28 174 L44 174" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M172 158 L172 174 L156 174" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Landmark Metric Indicator Points -->
+  <circle cx="100" cy="74" r="2.5" fill="#000000" />
+  <circle cx="100" cy="96" r="2.5" fill="#000000" />
+  <circle cx="100" cy="116" r="2.5" fill="#000000" />
+</svg>

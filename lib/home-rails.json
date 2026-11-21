@@ -1,0 +1,72 @@
+{
+  "featured": [
+    "rune-tee-1",
+    "ember-tee-2",
+    "loft-tee-3",
+    "solace-tee-4",
+    "corso-tee-5",
+    "cedar-tee-6",
+    "juno-tee-7",
+    "quarry-tee-8"
+  ],
+  "deals": [
+    "rune-tee-1",
+    "solace-tee-4",
+    "corso-tee-5",
+    "juno-tee-7",
+    "aster-shirt-10",
+    "halden-shirt-13",
+    "fable-shirt-15",
+    "mesa-shirt-16"
+  ],
+  "women": [
+    "rune-tee-1",
+    "ember-tee-2",
+    "loft-tee-3",
+    "solace-tee-4",
+    "corso-tee-5",
+    "cedar-tee-6",
+    "juno-tee-7",
+    "quarry-tee-8"
+  ],
+  "men": [
+    "rune-tee-91",
+    "ember-tee-92",
+    "loft-tee-93",
+    "solace-tee-94",
+    "corso-tee-95",
+    "cedar-tee-96",
+    "juno-tee-97",
+    "quarry-tee-98"
+  ],
+  "shoes": [
+    "solace-sneaker-64",
+    "corso-sneaker-65",
+    "cedar-sneaker-66",
+    "juno-sneaker-67",
+    "quarry-sneaker-68",
+    "marlow-sneaker-69",
+    "aster-sneaker-70",
+    "haze-sneaker-71"
+  ],
+  "jackets": [
+    "grove-jacket-28",
+    "north-jacket-29",
+    "aero-jacket-30",
+    "rune-jacket-31",
+    "ember-jacket-32",
+    "loft-jacket-33",
+    "solace-jacket-34",
+    "corso-jacket-35"
+  ],
+  "kids": [
+    "orbit-tee-172",
+    "brooke-tee-173",
+    "isla-tee-174",
+    "pier-tee-175",
+    "nova-tee-176",
+    "quinn-tee-177",
+    "grove-tee-178",
+    "north-shirt-179"
+  ]
+}
